@@ -2,7 +2,7 @@
 '''
 Name:          visar_ROI_selection.py
 License:       MIT
-Version:       1.0
+Version:       2.0
 Last modified: 8 Aug. 2018 (SBB)
 Authors:       Akel Hashim          (ahashim@slac.stanford.edu)
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)
