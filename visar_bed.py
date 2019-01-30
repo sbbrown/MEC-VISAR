@@ -2,8 +2,8 @@
 '''
 Name:          visar_bed.py
 License:       MIT
-Version:       1.0
-Last modified: 10 Aug. 2018 (SBB)
+Version:       2.0
+Last modified: 30 Jan. 2019 (SBB)
 Authors:       Akel Hashim          (ahashim@slac.stanford.edu)
                Bob Nagler           (bnagler@slac.stanford.edu)
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)

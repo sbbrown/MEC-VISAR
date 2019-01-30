@@ -2,8 +2,8 @@
 '''
 Name:          launch_visar_gui.py
 License:       MIT
-Version:       1.0
-Last modified: 9 Aug. 2018 (SBB)
+Version:       2.0
+Last modified: 30 Jan. 2019 (SBB)
 Authors:       Bob Nagler           (bnagler@slac.stanford.edu)
                Akel Hashim          (ahashim@slac.stanford.edu)  
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)     
@@ -11,8 +11,25 @@ Description:   Runs VISAR analysis on local machine and data
 '''
 
 '''Imports -----------------------------------------------------------------'''
-from Tkinter import *
-from tkFileDialog import askopenfilename
+
+try:    # For Python2
+    import Tkinter as tk
+    import ttk
+except: # For Python3
+    try:
+        import tkinter as tk
+    except:
+        print('Import Error: Tkinter is needed to run the GUI')
+        sys.exit(1)
+ 
+try:    # For Python2
+    from tkFileDialog import askopenfilename
+except: # For Python3
+    try:
+        from tkinter import filedialog
+    except:
+        print('Import Error: filedialog is needed to run the GUI')
+        sys.exit(1)
 
 from matplotlib import pyplot
 from matplotlib import image as image_p
@@ -125,8 +142,8 @@ def fringe_jump_correction(im1,im2,m=None,n=None):
             # Add fringe jump correction to im2
             im2._proc_fsv[j,i] += (n * im2._vpf) 
     
-    print 'm =', m
-    print 'n =', n, '\n'
+    print('m =', m)
+    print('n =', n, '\n')
     return (im1._proc_fsv, im2._proc_fsv)
      
 def apply_fringe_jump_correction(im1,im2,m,n):
@@ -246,7 +263,11 @@ class VISAR_image():
         self._lambda=532e-9 # laser wavelength
 
         # Read in filename and initialize variables
+        
         filename = self.read_fringe_file(filename)
+        
+        
+        
         if filename == None:
             self._fringe    = None     # Array (real) of original fringe image
             self._proc_im   = None     # Array (complex) of image being proces.
@@ -284,18 +305,30 @@ class VISAR_image():
             iml = reshape(list(im.getdata()),(im.size[1],im.size[0]))
             self._fringe  = where(iml<0,iml+65536,iml)
             self._proc_im = self._fringe
-            
+
             # Parse tag data for timing
             info = im.tag.tagdata[270]
-            r_i  = info.find('Time Range')
-            r_e  = info.find('ns',r_i)
+            #print(type(info))
+            #print(info)
+            
+            r_i  = info.find(b'Time Range')
+            r_e  = info.find(b'ns',r_i)
+            
+            #print(r_i)
+            #print(type(r_i))
+            #print(r_e)
+            #print(type(r_e))
             
             # Set time base
-            self._time_base = info[r_i+12:r_e+2]
+            self._time_base = info[r_i+12:r_e+2].decode("utf-8") 
+            #print(info[r_i+12:r_e+2])
+            #print(type(info[r_i+12:r_e+2]))
+            
             if self._time_base not in ('0.5 ns','1 ns','2 ns','5 ns','10 ns',
             '20 ns','50 ns','100 ns','200 ns','500 ns'):
                 self._time_base = "None"
-        
+            #print(self._time_base)
+            #print(type(self._time_base))
         return filename_new
 
     def reset_im(self):
@@ -312,10 +345,10 @@ class VISAR_image():
         '''
         # Check if time base assigned from tags
         if self._time_base == None:
-            print 'No time base defined. aborting'
+            print('No time base defined. aborting')
             return
         if self._time_base not in self._time_coeff:
-            print 'No coefficients found for time base of '+ self._time_base
+            print('No coefficients found for time base of '+ self._time_base)
             return
         
         # Assign shape of image to local variable
@@ -361,7 +394,7 @@ class VISAR_image():
         xpr = sum(self._proc_im,axis=0) # Projection on x axis
         center_pix = size(xpr)/2.0
         offset = 5
-        return center_pix+offset+argmax(abs(xpr[center_pix+offset:]))
+        return center_pix+offset+argmax(abs(xpr[int(center_pix+offset):]))
 
     def window1d(self,fringe_freq,width=None):
         '''Windows shifted 1dfft around the passed fringe_freq.
@@ -374,11 +407,11 @@ class VISAR_image():
         if width == None:
             width = int(fringe_freq-shape(self._proc_im)[1]/2)
         
-        width  = 2*(width/2)+1      # add 1 to ensure the width is odd
+        width  = int(2*(width/2)+1)      # add 1 to ensure the width is odd
         wind_h = hanning(width)
         
         wind1d = zeros(self.shape()[1])
-        wind1d[fringe_freq-width/2:fringe_freq+width/2+1]=wind_h
+        wind1d[int(fringe_freq-width/2)+1:int(fringe_freq+(width/2)+1)]=wind_h
         wind2d = zeros(self.shape())
         wind2d[:,:]   = wind1d
         self._proc_im = self._proc_im*wind2d
@@ -472,7 +505,7 @@ class VISAR_image():
         '''
         
         if self._vpf == None:
-            print 'No velocity per fringe defined; cannot calibrate phase.'
+            print('No velocity per fringe defined; cannot calibrate phase.')
         else:
             self._proc_fsv = self._proc_fsv*direction*self._vpf/(2*pi)
 

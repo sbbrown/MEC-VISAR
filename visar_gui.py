@@ -2,8 +2,8 @@
 '''
 Name:          visar_gui.py
 License:       MIT
-Version:       1.0
-Last modified: 7 Aug. 2018 (SBB)
+Version:       2.0
+Last modified: 30 Jan. 2019 (SBB)
 Authors:       Akel Hashim          (ahashim@slac.stanford.edu)
                Bob Nagler           (bnagler@slac.stanford.edu)
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)
@@ -21,19 +21,26 @@ import os
 try:    # For Python2
     import Tkinter as tk
     import ttk
+    from Tkinter import Tk
 except: # For Python3
     try:
         import tkinter as tk
-         
+        from tkinter import ttk
+        from tkinter import Tk
     except:
-        print "Import Error: Tkinter is needed to run the GUI"
+        print('Import Error: Tkinter is needed to run the GUI')
         sys.exit(1)
-     
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
+ 
+try:    # For Python2
+    from tkFileDialog import askopenfilename
+except: # For Python3
+    try:
+        from tkinter import filedialog
+    except:
+        print('Import Error: filedialog is needed to run the GUI')
+        sys.exit(1)
         
 from launch_visar_analysis import LaunchVISAR
-
 '''Class Definitions -------------------------------------------------------''' 
 
 class VisarGUI:
@@ -63,7 +70,8 @@ class VisarGUI:
    
     def __init__(self,master):
         self.root = master
-        self.home = os.path.expanduser('~/Desktop')
+        self.home = os.getcwd()
+        #self.home = os.path.expanduser('~/Desktop')
         master.title('VISAR Analysis')
         master.resizable(True, True)
         master.wm_geometry("800x850")
@@ -87,7 +95,7 @@ class VisarGUI:
         self.frame_content = tk.Frame(self.frame_body)
         self.frame_content.grid(row=0, column=0, sticky='news') 
         ttk.Label(self.frame_content, text='Input Files:', 
-                  font=('Arial', 18, 'bold', 'underline')).                   \
+                  font=('Arial', 18, 'bold', 'underline')).\
                   grid(row=0, column=0, padx=5, pady=5, sticky='w') 
         
         ### Reference images -------------------------
@@ -338,7 +346,7 @@ class VisarGUI:
         '''Assigns variables queried from GUI and passes to analysis script 
         via instance of class LaunchVISAR'''
         
-        print "\nAnalyzing the VISAR data now...\n"
+        print('\nAnalyzing the VISAR data now...\n')
         
         # Set variables to pass to launch_visar script
         f_v1_ref = self.filename_bed1_ref
@@ -365,16 +373,16 @@ class VisarGUI:
         plotFSV = self.plot_FSV.get()
         saveFSV = self.save_FSV.get()
         
-        print '\nBeginning VISAR analysis now...\n'
+        print('\nBeginning VISAR analysis now...\n')
         Analyze = LaunchVISAR(f_v1_ref, f_v2_ref, f_v1, f_v2, h_v1, h_v2, FOV, 
                               ROI, FSV_calib, FSVdir_v1, FSVdir_v2, FJC, m, n, 
                               plotRF, plotFSV, saveFSV)
         Analyze()
-        print 'The VISAR analysis has finished for the selected runs!'
+        print('The VISAR analysis has finished for the selected runs!')
           
     def Quit(self):
         
-        print '\nQuitting the application! \n'
+        print('\nQuitting the application! \n')
         self.root.destroy()
         sys.exit(0)
         
@@ -382,44 +390,85 @@ class VisarGUI:
         '''Selects the reference VISAR image of bed1'''
         
         Tk().withdraw()
-        self.filename_bed1_ref = askopenfilename(title = 'Select reference'
+        
+        try:    # For Python2
+            self.filename_bed1_ref = askopenfilename(title = 'Select reference'
                                                      ' data for bed 1:', 
                                                      initialdir = self.home)
-        print 'Selected file ' + self.filename_bed1_ref + ' for bed 1.\n'
-        ttk.Label(self.frame_content, text=self.filename_bed1_ref, 
+        except: # For Python3
+            try:
+                self.filename_bed1_ref = filedialog.askopenfilename(title = 'Select reference'
+                                                     ' data for bed 1:', 
+                                                     initialdir = self.home)
+            except:
+                print('Selection Error: filedialog is needed to run the GUI')
+                sys.exit(1)
+                
+        print('Selected file ' + self.filename_bed1_ref + ' for bed 1.\n')
+        ttk.Label(self.frame_content, wraplength=200, text=self.filename_bed1_ref, 
                   font=('Arial', 8)).grid(row=2, column=1, padx=5, sticky='w')
         
     def select_bed2_ref(self):
         '''Selects the reference VISAR image of bed2'''
         
         Tk().withdraw()
-        self.filename_bed2_ref = askopenfilename(title = 'Select reference'
-                                                     ' data for bed 2:',
+        try:    # For Python2
+            self.filename_bed2_ref = askopenfilename(title = 'Select reference'
+                                                     ' data for bed 2:', 
                                                      initialdir = self.home)
-        print 'Selected file ' + self.filename_bed1_ref + ' for bed 2.\n'
-        ttk.Label(self.frame_content, text=self.filename_bed2_ref, 
+        except: # For Python3
+            try:
+                self.filename_bed2_ref = filedialog.askopenfilename(title = 'Select reference'
+                                                     ' data for bed 2:', 
+                                                     initialdir = self.home)
+            except:
+                print('Selection Error: filedialog is needed to run the GUI')
+                sys.exit(1)
+                
+        print('Selected file ' + self.filename_bed2_ref + ' for bed 2.\n')
+        ttk.Label(self.frame_content, wraplength=200, text=self.filename_bed2_ref, 
                   font=('Arial', 8)).grid(row=2, column=5, padx=5, sticky='w')
 
     def select_bed1_data(self):
         '''Selects the VISAR image of bed1'''
         
         Tk().withdraw()
-        self.filename_bed1 = askopenfilename(title = 'Select shot data for'
+        try:    # For Python2
+            self.filename_bed1 = askopenfilename(title = 'Select shot data for'
                                                  ' bed 1:',
                                                  initialdir = self.home)
-        print 'Selected file ' + self.filename_bed1 + ' for bed 1.\n'
-        ttk.Label(self.frame_content, text=self.filename_bed1, 
+        except: # For Python3
+            try:
+                self.filename_bed1 = filedialog.askopenfilename(title = 'Select shot data for'
+                                                 ' bed 1:',
+                                                 initialdir = self.home)
+            except:
+                print('Selection Error: filedialog is needed to run the GUI')
+                sys.exit(1)
+                
+        print('Selected file ' + self.filename_bed1 + ' for bed 1.\n')
+        ttk.Label(self.frame_content, wraplength=200, text=self.filename_bed1, 
                   font=('Arial', 8)).grid(row=4, column=1, padx=5, sticky='w')
         
     def select_bed2_data(self):
         '''Selects the VISAR image of bed2'''
         
         Tk().withdraw()
-        self.filename_bed2 = askopenfilename(title = 'Select shot data for'
+        try:    # For Python2
+            self.filename_bed2 = askopenfilename(title = 'Select shot data for'
                                                  ' bed 2:',
                                                  initialdir = self.home)
-        print 'Selected file ' + self.filename_bed2 + ' for bed 2.\n'        
-        ttk.Label(self.frame_content, text=self.filename_bed2, 
+        except: # For Python3
+            try:
+                self.filename_bed2 = filedialog.askopenfilename(title = 'Select shot data for'
+                                                 ' bed 2:',
+                                                 initialdir = self.home)
+            except:
+                print('Selection Error: filedialog is needed to run the GUI')
+                sys.exit(1)
+         
+        print('Selected file ' + self.filename_bed2 + ' for bed 2.\n')        
+        ttk.Label(self.frame_content, wraplength=200, text=self.filename_bed2, 
                   font=('Arial', 8)).grid(row=4, column=5, padx=5, sticky='w')
             
     def check_FSV_calib(self):

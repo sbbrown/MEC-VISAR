@@ -2,8 +2,8 @@
 '''
 Name:          launch_visar_analysis.py
 License:       MIT
-Version:       1.0
-Last modified: 9 Aug. 2018 (SBB)
+Version:       2.0
+Last modified: 30 Jan. 2019 (SBB)
 Authors:       Akel Hashim          (ahashim@slac.stanford.edu)
                Bob Nagler           (bnagler@slac.stanford.edu)
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)
@@ -22,7 +22,15 @@ matplotlib.use('TkAgg')
 import matplotlib.image as mpimg
 
 import numpy as np
-import PIL
+
+try:    # For Python2
+    import PIL
+except: # For Python3
+    try:
+        import pillow
+    except:
+        print('Import Error: PIL/pillow is needed to run the analysis')
+        sys.exit(1)
 
 from glob import glob
 
@@ -63,8 +71,8 @@ class LaunchVISAR:
             self.h_v1 = float(etalon_bed1)
             self.h_v2 = float(etalon_bed2)
         else:
-            print '\nERROR: No etalon thickness specified for one or both of '\
-                  'the beds. VISAR analysis cannot be completed.\n'
+            print('\nERROR: No etalon thickness specified for one or both of '\
+                  'the beds. VISAR analysis cannot be completed.\n')
             raise ValueError('No etalon thickness specified for one or both of'
                              ' the beds. VISAR analysis cannot be completed.')
         
@@ -72,8 +80,8 @@ class LaunchVISAR:
         if FieldOfView:
             self.FOV = float(FieldOfView)
         else:
-            print 'No Field of View (FOV) specified. Setting default value of'\
-                  ' 265 microns.\n'
+            print('No Field of View (FOV) specified. Setting default value of'\
+                  ' 265 microns.\n')
             self.FOV = 265.0
         
         # Check if ROI selection is selected; use full FOV for analysis if not 
@@ -87,14 +95,14 @@ class LaunchVISAR:
             if bed1_dir:
                 self.v1_dir = int(bed1_dir) 
             else:
-                print 'No calibration direction specified for bed1. Setting ' \
-                      'to default value of -1.\n'
+                print('No calibration direction specified for bed1. Setting ' \
+                      'to default value of -1.\n')
                 self.v1_dir = -1
             if bed2_dir:
                 self.v2_dir = int(bed2_dir) # -1 or 1
             else:
-                print 'No calibration direction specified for bed2. Setting ' \
-                      'to default value of 1.\n'
+                print('No calibration direction specified for bed2. Setting ' \
+                      'to default value of 1.\n')
                 self.v2_dir = 1
 
         # Check if fringe jump correction specified; set to default m=0, n=0 
@@ -110,8 +118,8 @@ class LaunchVISAR:
                     self.m = int(s[0])
                     self.mh = int(s[1])
             else:
-                print 'No fringe jump correction m specified for bed 1. '     \
-                      'Setting a default value of m = 0.\n'
+                print('No fringe jump correction m specified for bed 1. '     \
+                      'Setting a default value of m = 0.\n')
                 self.m = 0
                 self.mh = 0
             if bed2_n:
@@ -123,8 +131,8 @@ class LaunchVISAR:
                     self.n = int(s[0])
                     self.nh = int(s[1])
             else:
-                print 'No fringe jump correction n specified for bed 2. '     \
-                      'Setting a default value of n = 0.\n'  
+                print('No fringe jump correction n specified for bed 2. '     \
+                      'Setting a default value of n = 0.\n')  
                 self.n = 0
                 self.nh = 0
         
@@ -165,8 +173,8 @@ class LaunchVISAR:
         # Calculate velocity-per-fringe for both beds -------------------------
         im1._vpf = cal_vpf(self.h_v1)                   # [m/s]
         im2._vpf = cal_vpf(self.h_v2)                   # [m/s]
-        print 'VPF1 =', im1._vpf, 'm/s'
-        print 'VPF2 =', im2._vpf, 'm/s\n'
+        print('VPF1 =', im1._vpf, 'm/s')
+        print('VPF2 =', im2._vpf, 'm/s\n')
         
         # Initiate raw fringe files
         img1 = np.asarray(PIL.Image.open(self.filename_bed1))
@@ -174,18 +182,22 @@ class LaunchVISAR:
         
         # Set common time base and field of view 
         img_time_base = im1._time_base
+        # currently null
+        #print(img_time_base)
+        #print(type(img_time_base))
         img_FOV = im1._FOV
         
         # Reset images --------------------------------------------------------
-        print 'Resetting the images...\n'
+        print('Resetting the images...\n')
         im1.reset_im()
         im2.reset_im()
         im1_ref.reset_im()
         im2_ref.reset_im()
         
+        
         # Select ROI if GUI checkbox selected ---------------------------------
         if self.ROI:
-            print 'Selecting the ROI...\n'
+            print('Selecting the ROI...\n')
 
             ROI_pixels = select_ROI_plots(img1,img2)
             
@@ -214,27 +226,27 @@ class LaunchVISAR:
                         ROI_pixels[4]:ROI_pixels[5]]
         
         # Time calibration and FFT --------------------------------------------
-        print 'Getting the time calibration...\n'
+        print('Getting the time calibration...\n')
         im1.get_time_cal()
         im2.get_time_cal()
         im1_ref.get_time_cal()
         im2_ref.get_time_cal()
        
-        print 'Performing the 1D FFT...\n'
+        print('Performing the 1D FFT...\n')
         im1.fft_1d()
         im2.fft_1d()
         im1_ref.fft_1d()
         im2_ref.fft_1d()
 
         ## FFT shift ----------------------------------------------------------
-        print 'Performing the 1D FFT shift...\n'
+        print('Performing the 1D FFT shift...\n')
         im1.fftshift_1d()
         im2.fftshift_1d()
         im1_ref.fftshift_1d()
         im2_ref.fftshift_1d()
    
         # Find frequency and apply Hanning window -----------------------------
-        print 'Finding the fringe frequency...\n'
+        print('Finding the fringe frequency...\n')
         ff1     = im1.find_fringe_frequency()
         ff2     = im2.find_fringe_frequency()
         ff1_ref = im1_ref.find_fringe_frequency()
@@ -246,49 +258,49 @@ class LaunchVISAR:
         im2_ref.window1d(ff2_ref)
 
         # Center frequency selection ------------------------------------------
-        print 'Centering the frequency selection...\n'
+        print('Centering the frequency selection...\n')
         im1.shift_to_center(ff1)
         im2.shift_to_center(ff2)
         im1_ref.shift_to_center(ff1_ref)
         im2_ref.shift_to_center(ff2_ref)
 
         # Inverse FFT shift ---------------------------------------------------
-        print 'Performing the 1D IFFT shift...\n'
+        print('Performing the 1D IFFT shift...\n')
         im1.ifftshift_1d()
         im2.ifftshift_1d()
         im1_ref.ifftshift_1d()
         im2_ref.ifftshift_1d()
 
         # Inverse FFT ---------------------------------------------------------
-        print 'Performing the 1D IFFT...\n'
+        print('Performing the 1D IFFT...\n')
         im1.ifft_1d()
         im2.ifft_1d()
         im1_ref.ifft_1d()
         im2_ref.ifft_1d()
 
         # FSV/Phase extraction ------------------------------------------------
-        print 'Performing the phase extraction...\n'
+        print('Performing the phase extraction...\n')
         im1.get_fsv_refl()
         im2.get_fsv_refl()
         im1_ref.get_fsv_refl()
         im2_ref.get_fsv_refl()
 
         # Phase unwrapping ----------------------------------------------------
-        print 'Unwrapping the phase...\n'
+        print('Unwrapping the phase...\n')
         im1.unwrap_phase2()
         im2.unwrap_phase2()
         im1_ref.unwrap_phase2()
         im2_ref.unwrap_phase2()
 
         # Subtract reference shot ---------------------------------------------
-        print 'Subtracting the reference shots...\n'
+        print('Subtracting the reference shots...\n')
         im1._proc_refl -= im1_ref._proc_refl
         im1._proc_fsv  -= im1_ref._proc_fsv
         im2._proc_refl -= im2_ref._proc_refl
         im2._proc_fsv  -= im2_ref._proc_fsv
 
         # Calibrate FSV -------------------------------------------------------
-        print 'Calibrating the FSV...\n'
+        print('Calibrating the FSV...\n')
         if self.FSV_calib:
             im1.cal_fsv(direction = self.v1_dir)
             im2.cal_fsv(direction = self.v2_dir)
@@ -297,18 +309,18 @@ class LaunchVISAR:
             im2.cal_fsv(direction = 1)
 
         # Shift to Zero -------------------------------------------------------
-        print 'Shifting the FSV to zero...\n'
+        print('Shifting the FSV to zero...\n')
         im1.shift_to_zero()
         im2.shift_to_zero()
         ROI_BT_pixels = None
 
         # Find breakout time --------------------------------------------------
-        print 'Finding the breakout time...\n'
+        print('Finding the breakout time...\n')
         im1.find_breakout_time()
         im2.find_breakout_time()
         
         # Fringe jump correction  ---------------------------------------------
-        print 'Performing the fringe jump correction...\n'
+        print('Performing the fringe jump correction...\n')
         
         # If fringe jump specified, apply to data directly
         if self.fjc:
