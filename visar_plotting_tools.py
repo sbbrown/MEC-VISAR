@@ -2,8 +2,8 @@
 '''
 Name:          visar_plotting_tools.py
 License:       MIT
-Version:       1.0
-Last modified: 10 Aug. 2018 (SBB)
+Version:       2.0
+Last modified: 30 Jan. 2019 (SBB)
 Authors:       Akel Hashim          (ahashim@slac.stanford.edu)
                Bob Nagler           (bnagler@slac.stanford.edu)
                Shaughnessy Brown    (sbbrown@slac.stanford.edu)
@@ -19,7 +19,15 @@ import matplotlib as mpl
 
 import numpy as np
 
-import PIL
+try:    # For Python2
+    import PIL
+except: # For Python3
+    try:
+        import pillow
+    except:
+        print('Import Error: PIL/pillow is needed to run the analysis')
+        sys.exit(1)
+
 import threading
 from textwrap import wrap
 
@@ -48,6 +56,8 @@ def determine_yticks_labels(time_base,ydim):
             stop = i
             break
     
+    #print(time_base)
+    #print(type(time_base))
     sweep_window = float(time_base[:stop])
     
     yticks = list(np.linspace(0,ydim-1,6))
@@ -65,6 +75,8 @@ def ROI_ticks_labels(time_base,FOV,ROI_info,xdim,ydim):
             stop = i
             break
     
+    #print(time_base)
+    #print(type(time_base))
     sweep_window = float(time_base[:stop])
     
     # Assign locations selected by ROI script
@@ -92,8 +104,8 @@ def select_ROI_plots(img1,img2):
        coordinates selected by click and release.'''
     global ROI_pixels
     
-    print '\nWARNING: If Interactive Plotting selected prior, ROI selection ' \
-          'plots may not function properly. If this occurs, restart mecana.\n'
+    print('\nWARNING: If Interactive Plotting selected prior, ROI selection ' \
+          'plots may not function properly. If this occurs, restart mecana.\n')
           
     title = 'Select the ROI using Zoom tool, dragging from top left to       '\
             'bottom right of desired window. Press HOME to view the entire   '\
@@ -165,8 +177,9 @@ def plot_raw(img1,img2,img_FOV,img_time_base):
     fig = plt.figure(figsize = (15,10))
     fig.canvas.set_window_title('Raw Fringe Files & Intensity Line-Out')
     
-    gs = gridspec.GridSpec(1, 2, height_ratios=[2, 1]) 
-
+    gs = gridspec.GridSpec(1, 2, height_ratios=[1]) 
+    # gs = gridspec.GridSpec(1, 2, height_ratios=[2, 1]) 
+    
     a1 = fig.add_subplot(gs[0])
     a1.set_title('VISAR Bed 1', fontsize = 20)
     plt.xlabel('x ($\mu$m)', fontsize = 20)
@@ -261,8 +274,15 @@ def plot_fsv_lineout(im1,im2, plot=True, save=False, ROI_info=None,
         bed_1, = plt.plot(x1, y, 'r-', label = 'Bed 1')
     for y in y2:
         bed_2, = plt.plot(x2, y, 'b-', label = 'Bed 2')
-    plt.legend(['bed 1', 'bed 2'], prop={'size':20}, loc='upper left')
-
+    
+        plt.legend(['bed 1', 'bed 2'], prop={'size':20}, loc='upper left')
+    ax = plt.gca()
+    leg = ax.get_legend()
+    leg.legendHandles[0].set_color('red')
+    leg.legendHandles[1].set_color('blue')
+    
+    
+    
     # Save to .csv if checked in GUI
     if save == True:
         z1 = np.c_[x1,y1[0]]
@@ -275,7 +295,7 @@ def plot_fsv_lineout(im1,im2, plot=True, save=False, ROI_info=None,
         np.savetxt('FSV1.csv', z1, delimiter=",") # Save in the local directory
         np.savetxt('FSV2.csv', z2, delimiter=",") # Save in the local directory
         
-        print 'FSV line-outs saved to FSV1.csv and FSV2.csv in local dir. \n'
+        print('FSV line-outs saved to FSV1.csv and FSV2.csv in local dir. \n')
         
     if plot == True:
         plt.tight_layout()
