@@ -19,8 +19,8 @@ Google python style guide https://github.com/google/styleguide/blob/gh-pages/pyg
 •	Python 2.7 or newer
 •	matplotlib
 •	numpy
-•	tkinter
-•	PIL
+•	Tkinter (Python 2) and tkinter (Python 3)
+•	PIL (Python 2) and pillow (Python 3)
 •	scipy
 
 ## Features
