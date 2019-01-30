@@ -72,11 +72,9 @@ FringeJumpCorrection, bed1_m, bed2_n, plotRawFringe, plotFinalFSV, saveFinalFSV)
 ## Installation
 This is a library, so download the scripts (6 total). To run the GUI-based analysis, navigate in a terminal (mac) or command line (windows) and run the GUI script.
 
-FOR MACS ``` python visar_gui.py ```
-FOR WINDOWS
-```
-py visar_gui.py
-```
+For macs:  ``` python visar_gui.py ```
+For windows:  ``` py visar_gui.py ```
+
 ## Credits
 This code is based upon the standard VISAR code implemented at the Matter in Extreme Conditions (MEC) endstation. The standard code was written by Akel Hashim based on scripts provided by Bob Nagler. Any and all bugs in this offline version are the responsibility of Shaughnessy Brennan Brown : )
 
